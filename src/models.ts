@@ -1,4 +1,5 @@
 import { OpenAIClient } from "@anvia/openai";
+import "dotenv/config";
 
 const apiKey = process.env.OPENAI_API_KEY;
 
