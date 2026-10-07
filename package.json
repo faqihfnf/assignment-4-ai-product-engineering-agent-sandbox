@@ -1,10 +1,11 @@
 {
-  "name": "agent-sandbox",
+  "name": "pustaka-research-agent",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "dotenv -e .env -- tsx src/index.ts",
+    "start": "tsx src/index.ts",
+    "eval": "tsx evals/research.eval.ts",
     "typecheck": "tsc --noEmit"
   },
   "packageManager": "pnpm@12.5.1",

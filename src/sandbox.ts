@@ -1,30 +1,33 @@
 import { createDockerSandboxTools, DockerSandboxClient } from "@anvia/sandbox";
 
+// Debian ships GNU find, which the sandbox file tools rely on (BusyBox find in Alpine does not work).
+const IMAGE = "debian:bookworm-slim";
+export const REPORTS_DIR = "reports";
+
 const client = new DockerSandboxClient();
-await client.pullImage({ image: "ghcr.io/astral-sh/uv:alpine" });
 
-export const sandbox = await client.createSandbox({
-  image: "ghcr.io/astral-sh/uv:alpine",
-  workspace: { type: "ephemeral" },
-  network: { mode: "bridge", ports: [8000] },
-  files: { "input/ticket.txt": "Login fails after reset at 09:30 UTC." },
-  directories: ["output"],
-  resources: { memoryMb: 512, cpus: 1, pidsLimit: 64 },
-  runtime: { commandTimeoutMs: 20_000, maxOutputBytes: 64_000 },
-});
+/**
+ * One isolated container per research session. The agent only needs to write
+ * and read report files, so the sandbox has no network and no shell tool;
+ * web search runs on the host through the web_search tool.
+ */
+export async function createResearchSandbox() {
+  await client.pullImage({ image: IMAGE });
 
-export const tools = createDockerSandboxTools({
-  sandbox: sandbox.runtime,
-  tools: [
-    "read_file",
-    "write_file",
-    "list_files",
-    "exec_command",
-    "list_ports",
-    "start_process",
-    "list_processes",
-    "read_process_logs",
-    "stop_process",
-    "wait_for_port",
-  ],
-});
+  const sandbox = await client.createSandbox({
+    image: IMAGE,
+    workspace: { type: "ephemeral" },
+    network: { mode: "none" },
+    directories: [REPORTS_DIR],
+    resources: { memoryMb: 256, cpus: 0.5, pidsLimit: 32 },
+    runtime: { commandTimeoutMs: 10_000, maxOutputBytes: 32_000 },
+  });
+
+  const tools = createDockerSandboxTools({
+    sandbox: sandbox.runtime,
+    tools: ["write_file", "read_file", "list_files"],
+    writeFile: { maxBytes: 16_000 },
+  });
+
+  return { sandbox, tools };
+}

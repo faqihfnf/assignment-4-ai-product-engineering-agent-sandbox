@@ -2,7 +2,9 @@
   "compilerOptions": {
     "module": "nodenext",
     "target": "esnext",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "strict": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
@@ -11,5 +13,8 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "evals/**/*.ts"
+  ]
 }
